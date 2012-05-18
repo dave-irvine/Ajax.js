@@ -3,7 +3,7 @@ Ajax.js
 
 A useless and redundant library to make Ajax calls.
 
-I got a little tired of loading all of jQuery/Prototype/mootools/<insert library here>
+I got a little tired of loading all of jQuery/Prototype/mootools/...
 just to do Ajax requests, but I also wanted something a little fancier than plain JS.
 Hence Ajax.js, a simple, lightweight library to perform Ajax requests in a semi-chainable
 manner.
