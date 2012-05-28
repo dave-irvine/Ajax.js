@@ -18,7 +18,7 @@ Ajax = function (opts) {
 		for(p in a) {
 			if(a.hasOwnProperty(p)) { c(p); }
 		}
-	},extend = function (to, from) {
+	}, extend = function (to, from) {
 		forEach(from, function(p) { to[p] = from[p]; });
 		return to;
 	}, queryString = function (obj) {
@@ -32,15 +32,21 @@ Ajax = function (opts) {
 		var self = this;
 
 		self.onDone = function() {};
-		self.done = function (callback) {
-			self.onDone = callback;
-		};
+		self.onFail = function() {};
 
 		self.options = {
 			method : "get"
 		};
 
 		extend(self.options, opts || {});
+
+		self.done = function (callback) {
+			self.onDone = callback;
+		};
+
+		self.fail = function (callback) {
+			self.onFail = callback;
+		};
 
 		self.req = createXMLHTTPObject();
 
@@ -50,13 +56,21 @@ Ajax = function (opts) {
 
 		self.req.open(self.options.method, self.options.url, true);
 
-		if (self.options.method.toLowerCase() === "post") { self.req.setRequestHeader("Content-type", "application/x-www-form-urlencoded"); }
+		if (self.options.method.toLowerCase() === "post") {
+			self.req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			var data = "";
+			forEach(self.options.data, function(p) {
+				data += p + "=" + self.options.data[p] + "&";
+			});
+			self.options.data = data.replace(/&+$/, '');
+			self.req.setRequestHeader("Content-length", self.options.data.length);
+			self.req.setRequestHeader("Connection", "close");
+		}
 
 		self.req.onreadystatechange = function () {
 			if (self.req.readyState !== 4) { return; }
-			if (self.req.status !== 200 && self.req.status !== 304) { return; }
-
-			self.onDone(self.req.responseText);
+			if (self.req.status !== 200 && self.req.status !== 304) { self.onFail(self.req.status); }
+			else { self.onDone(self.req.responseText); }
 		};
 
 		self.req.send(self.options.data);
